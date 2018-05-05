@@ -2,6 +2,8 @@
 Leveraging Slack as a C2
 
 
-# Workshop Title: Gray Hats Bot Botnet Creation
+# Workshop 
+
+### Title: Gray Hats Bot Botnet Creation
 
 Come to this workshop to learn how to create a botnet leveraging Slack or Discord’s API. No cybersecurity experience necessary. This workshop will equip you with the knowledge of how a basic botnet works and how to implement one with a messaging application. Stickers will be provided.
