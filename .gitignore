@@ -1,0 +1,2 @@
+# Never check in our config file that contains our user token
+config.ini
