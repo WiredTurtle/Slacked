@@ -11,3 +11,11 @@ Come to this workshop to learn how to create a botnet leveraging Slack or Discor
 **Date:** May 25th, 2018
 
 **Event:** ACM Joint Hackathon, Cybersecurity bot creation workshop
+
+## Installation
+
+Install the package requirements using the following command:
+
+```
+python3 -m pip install -r requirements.txt
+```
