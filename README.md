@@ -19,3 +19,7 @@ Install the package requirements using the following command:
 ```
 python3 -m pip install -r requirements.txt
 ```
+
+# Ethics
+
+Please use this tool and knowledge responsibly and ethically.
