@@ -54,7 +54,7 @@ Function takes in json and then executes the at key location: text
 Returns output
 '''
 def execute_command(data):
-    output = subprocess.run([data['text']], shell=True, stdout=subprocess.PIPE)
+    output = subprocess.run(data['text'].split(), shell=True, stdout=subprocess.PIPE)
     return output.stdout
 
 '''
