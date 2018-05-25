@@ -54,7 +54,8 @@ Function takes in json and then executes the at key location: text
 Returns output
 '''
 def execute_command(data):
-    output = subprocess.run(data['text'].split(), shell=True, stdout=subprocess.PIPE)
+    output = subprocess.run(data['text'].split(), stdout=subprocess.PIPE)
+    print(output.stdout)
     return output.stdout
 
 '''
@@ -80,10 +81,10 @@ def pull_commands(sc):
 
             # Fix Json
             j = json.loads(str(str_raw_commands).replace("'",'"'))
-            
+
 
             return j
-    return None    
+    return None
 
 '''
 Check to see if the messages pulled down were not from the bots user.
@@ -102,9 +103,8 @@ def send_me_maybe(j, test_username):
 
 
 def main():
-
-    machine_name = subprocess.run(['uname -n'], shell=True, stdout=subprocess.PIPE)
-
+    machine_name = subprocess.run(['hostname'], stdout=subprocess.PIPE)
+    print(machine_name.stdout)
     slack_token, slack_channel, test_username = get_config_info()
 
     # Create SlackClient object named sc.
