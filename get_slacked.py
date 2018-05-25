@@ -95,8 +95,6 @@ def send_me_maybe(j, test_username):
         if j['username'] != test_username:
             # Will fail to find when message not from bot. When from bot, will not execute anyways...
 
-            # data = subprocess.run([j['text']], shell=True, stdout=subprocess.PIPE)
-
             return False
     except:
         return True
